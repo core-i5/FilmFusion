@@ -13,5 +13,4 @@ urlpatterns = [
     # User
     path('', UserListCreateView.as_view(), name='user_list_create'),
     path('retrieve_update_destroy/', UserRetrieveUpdateDestroyView.as_view(), name='user_retrieve_update_destroy'),
-    path('retrieve_update_destroy/<int:pk>/', UserRetrieveUpdateDestroyView.as_view(), name='user_retrieve_update_destroy'),
     ]

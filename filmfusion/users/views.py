@@ -11,9 +11,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from filmfusion.permissions import IsAdminOrReadOnly
 from filmfusion.authentication import UUIDJWTAuthentication
+from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
+import logging
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -153,19 +156,15 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         pk = self.kwargs.get('pk')
-        if pk:
-            return User.objects.get(pk=pk)
-        else:
-            return self.request.user
-
-    def perform_destroy(self, instance):
-        instance.is_active = False
-        instance.save()
-        refresh_token = self.request.data.get('refresh_token')
-        if refresh_token:
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except Exception as e:
-                pass
-        return Response({'detail': 'User deactivated'}, status=status.HTTP_204_NO_CONTENT)
+        try:
+            if pk:
+                user = User.objects.get(pk=pk)
+            else:
+                user = self.request.user
+            return user
+        except User.DoesNotExist:
+            logger.error(f'User with pk {pk} not found')
+            raise NotFound('User not found.')
+        except Exception as e:
+            logger.error(f'An error occurred: {str(e)}')
+            raise NotFound('An error occurred.')
