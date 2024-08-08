@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'requests',
     'drf_yasg',
     'users',
+    'recommendations',
     'django_celery_results',
     'django_celery_beat',
 ]
@@ -192,3 +193,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+# TMDB 
+TMDB_API_KEY = "88fe2bb597da6f514b0f6ea282d1a444"
+TMDB_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4OGZlMmJiNTk3ZGE2ZjUxNGIwZjZlYTI4MmQxYTQ0NCIsIm5iZiI6MTcyMzA5NjI5OC4wNjk2MTEsInN1YiI6IjY2YjIzNzhkNDUyMzEyYWU2OGNiNmRlMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MraDpXLkiL78mebZUXim1dDJ0PNEJx_Ci5RefAA8Kxk"
