@@ -11,6 +11,8 @@ class RecommendationsConfig(AppConfig):
 
     def ready(self):
         
+        import recommendations.signals
+
         base_dir = settings.BASE_DIR
 
         preprocessed_data_path = os.path.join(base_dir, 'recommendations/rec_model_components/preprocessed_data.csv')

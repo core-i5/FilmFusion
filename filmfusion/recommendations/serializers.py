@@ -1,10 +1,14 @@
 from rest_framework import serializers
 from .models import Movie, Genre
+from reviews.models import Review
+from reviews.pagination import ReviewPagination
+from reviews.serializers import ReviewSerializer
+from .pagination import MoviePagination
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        fields = ['name']
+        fields = ['id', 'name']
 
 class MovieSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True) 
@@ -25,3 +29,40 @@ class MovieSerializer(serializers.ModelSerializer):
             movie.genres.add(genre)
 
         return movie
+    
+class MovieListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = [
+            'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path','genres'
+        ]
+
+class MovieDetailSerializer(serializers.ModelSerializer):
+    genres = GenreSerializer(many=True)
+    reviews = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Movie
+        fields = [
+            'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path', 'genres', 'reviews'
+        ]
+    
+    def get_reviews(self, movie):
+        reviews = Review.objects.filter(movie=movie)
+        paginated_reviews = ReviewPagination().paginate_queryset(reviews, self.context['request'])
+        serializer = ReviewSerializer(paginated_reviews, many=True, context=self.context)
+        return self.context['request'].pagination_class.get_paginated_response(serializer.data).data
+
+class GenreMoviesSerializer(serializers.ModelSerializer):
+    movies = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Genre
+        fields = ['name', 'movies']
+    
+    def get_movies(self, genre):
+        movies = genre.movie_set.all()
+        paginated_movies = MoviePagination().paginate_queryset(movies, self.context['request'])
+        serializer = MovieListSerializer(paginated_movies, many=True)
+        return self.context['request'].pagination_class.get_paginated_response(serializer.data).data
+    

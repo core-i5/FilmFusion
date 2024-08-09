@@ -6,6 +6,16 @@ from django.conf import settings
 from .models import Movie, Genre
 from .serializers import MovieSerializer
 from django.apps import apps
+from rest_framework import generics
+from .serializers import (
+    GenreMoviesSerializer, MovieDetailSerializer,
+    MovieListSerializer, GenreSerializer
+)
+from .pagination import MoviePagination
+from .search_indexes import MovieDocument, ReviewDocument
+from reviews.serializers import ReviewSerializer
+from reviews.pagination import ReviewPagination
+from elasticsearch_dsl import Q
 
 RecommendationsConfig = apps.get_app_config('recommendations')
 
@@ -142,3 +152,87 @@ def hybrid_recommendations(user_id=None, movie_id=None, num_recommendations=10):
             return [(int(data['id'].iloc[idx]), data['title'].iloc[idx]) for idx, score in sorted_recommendations]
         else:
             return [(int(data['id'].iloc[idx]), data['title'].iloc[idx]) for idx in cf_recommendations]
+
+
+class GenreMoviesView(generics.RetrieveAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreMoviesSerializer
+    pagination_class = MoviePagination  # Apply pagination class
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def get(self, request, *args, **kwargs):
+        genre = self.get_object()
+        movies = genre.movie_set.all()
+        paginated_movies = self.pagination_class().paginate_queryset(movies, request)
+        serializer = self.get_serializer(genre)
+        data = serializer.data
+        data['movies'] = self.pagination_class().get_paginated_response(MovieListSerializer(paginated_movies, many=True).data).data
+        return self.get_paginated_response(data)
+
+    def get_paginated_response(self, data):
+        return self.pagination_class().get_paginated_response(data)
+    
+
+class MovieDetailView(generics.RetrieveAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieDetailSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+
+class MovieListView(generics.ListAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+    pagination_class = MoviePagination 
+
+
+class ElasticsearchSearchView(generics.GenericAPIView):
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response({"error": "No search query provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        s_movies = MovieDocument.search().query(
+            Q("bool", should=[
+                Q("multi_match", query=query, fields=['title', 'overview', 'tagline']),
+                Q("match", tagline=query)
+            ])
+        )
+        movie_results = s_movies.execute()
+        
+        s_reviews = ReviewDocument.search().query(
+            Q("bool", should=[
+                Q("match", content=query),
+                Q("match", rating=query)
+            ])
+        )
+        review_results = s_reviews.execute()
+
+        movie_paginator = MoviePagination()
+        review_paginator = ReviewPagination()
+
+        paginated_movies = movie_paginator.paginate_queryset(
+            [hit.to_dict() for hit in movie_results.hits], request
+        )
+        paginated_reviews = review_paginator.paginate_queryset(
+            [hit.to_dict() for hit in review_results.hits], request
+        )
+
+        movie_serializer = MovieSerializer(paginated_movies, many=True)
+        review_serializer = ReviewSerializer(paginated_reviews, many=True)
+
+        return Response({
+            'movies': movie_paginator.get_paginated_response(movie_serializer.data).data,
+            'reviews': review_paginator.get_paginated_response(review_serializer.data).data
+        })
+    
+class GenreListView(generics.ListAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer

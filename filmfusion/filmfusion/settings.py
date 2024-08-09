@@ -10,7 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -39,12 +43,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+    'django_celery_results',
+    'django_celery_beat',
+    'django_elasticsearch_dsl',
     'requests',
     'drf_yasg',
     'users',
     'recommendations',
-    'django_celery_results',
-    'django_celery_beat',
+    'reviews',
 ]
 
 MIDDLEWARE = [
@@ -183,8 +189,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'brocode.noreply@gmail.com'
-EMAIL_HOST_PASSWORD = 'petlpncjmpfrwmxs'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
@@ -195,5 +201,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # TMDB 
-TMDB_API_KEY = "88fe2bb597da6f514b0f6ea282d1a444"
-TMDB_ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI4OGZlMmJiNTk3ZGE2ZjUxNGIwZjZlYTI4MmQxYTQ0NCIsIm5iZiI6MTcyMzA5NjI5OC4wNjk2MTEsInN1YiI6IjY2YjIzNzhkNDUyMzEyYWU2OGNiNmRlMyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.MraDpXLkiL78mebZUXim1dDJ0PNEJx_Ci5RefAA8Kxk"
+TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+TMDB_ACCESS_TOKEN = os.getenv('TMDB_ACCESS_TOKEN')
+
+# Configure Elasticsearch DSL
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'localhost:9200'
+    },
+}
