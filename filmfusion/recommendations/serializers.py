@@ -16,7 +16,7 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = [
-            'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path', 'genres'
+            'id','tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path', 'genres'
         ]
 
     def create(self, validated_data):
@@ -31,10 +31,11 @@ class MovieSerializer(serializers.ModelSerializer):
         return movie
     
 class MovieListSerializer(serializers.ModelSerializer):
+    genres = GenreSerializer(many=True)
     class Meta:
         model = Movie
         fields = [
-            'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path','genres'
+            'id', 'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path','genres'
         ]
 
 class MovieDetailSerializer(serializers.ModelSerializer):
@@ -44,14 +45,16 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = [
-            'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path', 'genres', 'reviews'
+            'id', 'tmdb_id', 'imdb_id', 'title', 'tagline', 'overview', 'release_date', 'popularity', 'vote_average', 'vote_count', 'poster_path', 'genres', 'reviews'
         ]
     
     def get_reviews(self, movie):
-        reviews = Review.objects.filter(movie=movie)
-        paginated_reviews = ReviewPagination().paginate_queryset(reviews, self.context['request'])
+        reviews = Review.objects.filter(movie=movie).order_by('created_at') 
+        paginator = ReviewPagination()
+        paginated_reviews = paginator.paginate_queryset(reviews, self.context['request'])
         serializer = ReviewSerializer(paginated_reviews, many=True, context=self.context)
-        return self.context['request'].pagination_class.get_paginated_response(serializer.data).data
+        return paginator.get_paginated_response(serializer.data).data
+
 
 class GenreMoviesSerializer(serializers.ModelSerializer):
     movies = serializers.SerializerMethodField()
@@ -60,9 +63,11 @@ class GenreMoviesSerializer(serializers.ModelSerializer):
         model = Genre
         fields = ['name', 'movies']
     
+    
     def get_movies(self, genre):
-        movies = genre.movie_set.all()
-        paginated_movies = MoviePagination().paginate_queryset(movies, self.context['request'])
+        movies = genre.movie_set.all().order_by('title')
+        paginator = MoviePagination()
+        paginated_movies = paginator.paginate_queryset(movies, self.context['request'])
         serializer = MovieListSerializer(paginated_movies, many=True)
-        return self.context['request'].pagination_class.get_paginated_response(serializer.data).data
+        return paginator.get_paginated_response(serializer.data).data
     

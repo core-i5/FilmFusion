@@ -27,11 +27,11 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
-    # Users
+    # User
     path('api/users/', include('users.urls')),
-    # Movies
+    # Movie
     path('api/movies/', include('recommendations.urls')),
-    # Reviews
+    # Review
     path('api/movie/', include('reviews.urls')),
     # Swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

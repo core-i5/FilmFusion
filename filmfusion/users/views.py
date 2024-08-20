@@ -155,16 +155,10 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [UUIDJWTAuthentication]
 
     def get_object(self):
-        pk = self.kwargs.get('pk')
         try:
-            if pk:
-                user = User.objects.get(pk=pk)
-            else:
-                user = self.request.user
+            user = self.request.user
             return user
-        except User.DoesNotExist:
-            logger.error(f'User with pk {pk} not found')
-            raise NotFound('User not found.')
+      
         except Exception as e:
             logger.error(f'An error occurred: {str(e)}')
-            raise NotFound('An error occurred.')
+            return None

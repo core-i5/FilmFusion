@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'django_celery_results',
     'django_celery_beat',
-    'django_elasticsearch_dsl',
+    # 'django_elasticsearch_dsl',
     'requests',
     'drf_yasg',
     'users',
@@ -143,6 +143,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'filmfusion.authentication.UUIDJWTAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -158,6 +159,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
+    'BLACKLIST_TOKEN_TYPES': ('access', 'refresh'),
 
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
@@ -205,8 +207,8 @@ TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 TMDB_ACCESS_TOKEN = os.getenv('TMDB_ACCESS_TOKEN')
 
 # Configure Elasticsearch DSL
-ELASTICSEARCH_DSL = {
-    'default': {
-        'hosts': 'localhost:9200'
-    },
-}
+# ELASTICSEARCH_DSL = {
+#     'default': {
+#         'hosts': 'localhost:9200'
+#     },
+# }

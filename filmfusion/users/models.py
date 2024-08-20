@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -27,7 +28,7 @@ class UUIDModel(models.Model):
     class Meta:
         abstract = True
 
-class User(AbstractBaseUser, UUIDModel):
+class User(AbstractBaseUser, UUIDModel, PermissionsMixin):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
@@ -43,6 +44,12 @@ class User(AbstractBaseUser, UUIDModel):
     def __str__(self):
         return self.email
 
+    def has_perm(self, perm, obj=None):
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        return self.is_superuser
+    
 class OTP(UUIDModel):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6)

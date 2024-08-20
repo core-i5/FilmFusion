@@ -2,20 +2,28 @@ from rest_framework import generics, permissions
 from .models import Review, Comment
 from .serializers import ReviewSerializer, CommentSerializer
 from .pagination import ReviewPagination, CommentPagination
+from rest_framework.exceptions import ValidationError
 
 class ReviewListCreateView(generics.ListCreateAPIView):
     serializer_class = ReviewSerializer
     permission_classes = [permissions.IsAuthenticated]
     pagination_class = ReviewPagination
-
+    
     def get_queryset(self):
         movie_id = self.request.query_params.get('movie_id')
+        queryset = Review.objects.all()
         if movie_id:
-            return Review.objects.filter(movie_id=movie_id)
-        return Review.objects.all()
+            queryset = queryset.filter(movie_id=movie_id)
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        movie = serializer.validated_data.get('movie')
+        user = self.request.user
+
+        if Review.objects.filter(movie=movie, user=user).exists():
+            raise ValidationError(f"You have already reviewed the movie '{movie.title}'.")
+        
+        serializer.save(user=user)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -42,9 +50,10 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         review_id = self.request.query_params.get('review_id')
+        queryset = Comment.objects.all()
         if review_id:
-            return Comment.objects.filter(review_id=review_id)
-        return Comment.objects.all()
+            queryset = queryset.filter(review_id=review_id)
+        return queryset.order_by('-created_at')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
