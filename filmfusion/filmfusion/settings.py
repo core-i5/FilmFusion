@@ -201,6 +201,10 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+CELERYD_CONCURRENCY = 2
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler' 
+
 
 # TMDB 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
@@ -212,3 +216,46 @@ TMDB_ACCESS_TOKEN = os.getenv('TMDB_ACCESS_TOKEN')
 #         'hosts': 'localhost:9200'
 #     },
 # }
+
+
+# logs
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'django_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/django.log'),
+            'formatter': 'verbose',
+        },
+        'celery_file': {
+            'level': 'ERROR',  
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs/celery.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['django_file'],
+            'level': 'ERROR', 
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['celery_file'],
+            'level': 'DEBUG',  
+            'propagate': False,
+        },
+    },
+}

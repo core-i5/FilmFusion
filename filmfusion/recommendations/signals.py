@@ -19,3 +19,5 @@
 # @receiver(post_delete, sender=Review)
 # def delete_review_index(sender, instance, **kwargs):
 #     ReviewDocument().delete(instance)
+
+

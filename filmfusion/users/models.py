@@ -56,5 +56,5 @@ class OTP(UUIDModel):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_expired(self):
-        return (timezone.now() - self.created_at).total_seconds() > 12000  
+        return (timezone.now() - self.created_at).total_seconds() > 120
 

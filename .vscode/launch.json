@@ -8,9 +8,8 @@
             "name": "Python Debugger: Django",
             "type": "debugpy",
             "request": "launch",
-            "args": [
-                "runserver"
-            ],
+            // "args": ["runserver"],
+            "args": ["shell"],
             "django": true,
             "autoStartBrowser": false,
             "program": "${workspaceFolder}/filmfusion/manage.py"

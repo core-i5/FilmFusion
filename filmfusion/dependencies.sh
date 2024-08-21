@@ -24,3 +24,17 @@ if systemctl status elasticsearch | grep -q "active (running)"; then
 else
     echo "Elasticsearch installation failed or the service is not running."
 fi
+
+# Install Redis
+sudo apt-get install -y redis-server
+
+# Enable and start the Redis service
+sudo systemctl enable redis-server.service
+sudo systemctl start redis-server.service
+
+# Verify Redis is running
+if systemctl status redis-server | grep -q "active (running)"; then
+    echo "Redis is successfully installed and running!"
+else
+    echo "Redis installation failed or the service is not running."
+fi

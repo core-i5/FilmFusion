@@ -164,3 +164,4 @@ cython_debug/
 filmfusion/recommendations/rec_model_components/*
 !filmfusion/recommendations/rec_model_components/TMDB_Movies.csv
 !filmfusion/recommendations/rec_model_components/movie_recommendation.ipynb
+.vscode/

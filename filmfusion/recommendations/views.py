@@ -152,29 +152,6 @@ def hybrid_recommendations(user_id=None, movie_id=None, num_recommendations=10):
             return [(int(data['id'].iloc[idx]), data['title'].iloc[idx]) for idx, score in sorted_recommendations]
         else:
             return [(int(data['id'].iloc[idx]), data['title'].iloc[idx]) for idx in cf_recommendations]
-
-
-# class GenreMoviesView(generics.RetrieveAPIView):
-#     queryset = Genre.objects.all()
-#     serializer_class = GenreMoviesSerializer
-#     pagination_class = MoviePagination  
-
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#         context['request'] = self.request
-#         return context
-
-#     def get(self, request, *args, **kwargs):
-#         genre = self.get_object()
-#         movies = genre.movie_set.all()
-#         paginated_movies = self.pagination_class().paginate_queryset(movies, request)
-#         serializer = self.get_serializer(genre)
-#         data = serializer.data
-#         data['movies'] = self.pagination_class().get_paginated_response(MovieListSerializer(paginated_movies, many=True).data).data
-#         return self.get_paginated_response(data)
-
-#     def get_paginated_response(self, data):
-#         return self.pagination_class().get_paginated_response(data)
     
 
 class GenreMoviesView(generics.RetrieveAPIView):

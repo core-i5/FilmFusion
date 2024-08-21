@@ -22,3 +22,10 @@ class Movie(UUIDModel):
 
     def __str__(self):
         return self.title
+
+class TaskState(models.Model):
+    task_name = models.CharField(max_length=255)
+    last_processed_movie_id = models.IntegerField(default=0)
+    failed_movie_ids = models.JSONField(default=list)  
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
